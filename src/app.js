@@ -26,21 +26,38 @@ try {
 
 //POST ('/cadastro'):
 app.post('/cadastro', async (req, res) => {
-    try {
-        await db.collection('users').insertOne({
-            name: req.body.name,
-            email: req.body.email,
-            password: req.body.password,
-            confirmPassword: req.body.confirmPassword
-        })
-        res.status(201).send('Successfully created!');
+    const user = req.body;
 
-        const userCreated = await db.collection('users').findOne({email: req.body.email});
+    const schema = joi.object({
+        name: joi.string().empty().required(),
+        email: joi.string().email().empty().required(),
+        password: joi.string().empty().required(),
+        confirmPassword: joi.string().empty().required()
+    })
+
+    const result = schema.validate(user, {abortEarly: false});
+    if (result.error) {
+        const errorMessage = result.error.details.map((err) => {
+            return err.message
+        });
+        return res.status(422).send(errorMessage);
+    }
+
+    const userCreated = await db.collection('cadastro').findOne({email: user.email});
         if (userCreated) return res.status(409).send('The user already exists');
 
-        const passwordOne = await db.collection('users').findOne({password: req.body.password});
-        const passwordTwo = await db.collection('users').findOne({confirmPassword: req.body.confirmPassword});
+        const passwordOne = await db.collection('cadastro').findOne({password: user.password});
+        const passwordTwo = await db.collection('cadastro').findOne({confirmPassword: user.confirmPassword});
         if (passwordOne !== passwordTwo) return res.status(422).send('Passwords do not match');
+
+    try {
+        await db.collection('cadastro').insertOne({
+            name: user.name,
+            email: user.email,
+            password: user.password,
+            confirmPassword: user.confirmPassword
+        })
+        res.status(201).send('Successfully created!');
 
     } catch (error) {
         console.log(error);
