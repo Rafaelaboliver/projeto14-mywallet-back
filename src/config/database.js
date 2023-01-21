@@ -1,7 +1,5 @@
 import dotenv from 'dotenv';
-import joi from 'joi';
 import { MongoClient } from 'mongodb';
-import bcrypt from 'bcrypt';
 
 
 dotenv.config()
