@@ -1,12 +1,13 @@
 import { Router } from "express";
-import { singUp } from "../controllers/auth.js";
+import { singUp, singIn } from "../controllers/auth.js";
 import { validateSchema } from "../middlewares/validateShemas.js";
-import { signUpSchema } from "../schemas/authSchemas.js";
+import { signUpSchema, singInSchema } from "../schemas/authSchemas.js";
 
 
 const authRouter = Router();
 
 authRouter.post("/singUp", validateSchema(signUpSchema), singUp);
+authRouter.post("/singIn", validateSchema(singInSchema), singIn);
 
 export default authRouter;
 
