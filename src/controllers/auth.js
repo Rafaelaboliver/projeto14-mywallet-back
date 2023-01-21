@@ -1,0 +1,43 @@
+
+import db from '../config/database.js';
+import bcrypt from "bcrypt";
+
+const usersCollection = db.collection('users');
+const sessionsCollection = db.collection('sessions');
+const ingressesCollection = db.collection('ingresses');
+
+export async function singUp(req, res) {
+    const { name, email, password } = req.body;
+  
+
+    // check if email or name already exists
+    const user = await usersCollection.findOne({
+      $or: [{ email }, { name }],
+    }).catch((err) => {
+      console.log("Erro no findOne", err.message);
+      return res.status(500).send("Internal server error");
+    });
+    if (user) {
+      return res.status(400).send("Email or name already in use");
+    }
+  
+    // hash password
+    const salt = await bcrypt.genSalt(10);
+    const cryptoPassword = await bcrypt.hash(password, salt);
+  
+    // create user
+    await usersCollection.insertOne({
+      name,
+      email,
+      password: cryptoPassword,
+    });
+  
+    await ingressesCollection.insertOne({
+      name,
+      balance: 0,
+      coming: [],
+    });
+  
+    // send status and token
+    res.status(200).send("User created");
+  }
