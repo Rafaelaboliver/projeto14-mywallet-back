@@ -81,4 +81,20 @@ export async function singIn(req, res) {
   res.status(200).send(session);
 }
 
-//CheckIn section:
+//SignOut section:
+export async function singOut(req, res) {
+  const { token } = req.body;
+
+  // delete session
+  await sessionsCollection
+    .deleteOne({
+      token,
+    })
+    .catch((err) => {
+      console.log("Erro no deleteOne", err.message);
+      return res.status(500).send("Internal server error");
+    });
+
+  // send status
+  res.status(200).send("Session finished");
+}
